@@ -1,0 +1,7 @@
+@include('layouts.includes.header-link')
+@include('layouts.includes.header')
+@include('layouts.includes.user-nav')
+@include('layouts.includes.user-sidebar')
+@yield('mainContent')
+@include('layouts.includes.footer')
+@include('layouts.includes.footer-script')

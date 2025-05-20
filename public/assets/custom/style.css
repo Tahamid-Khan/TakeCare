@@ -1,0 +1,119 @@
+.menu-design {
+    color: #00bcd4;
+    padding-left: 16px !important;
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+    background: #f1f1f4;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding: 0;
+    font-size: 0.65rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.navbar-custom .nav-link {
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    border-bottom: 1px solid white !important;
+    background: #ffffffdb !important;
+    color: black !important;
+}
+
+.max-width-180 {
+    max-width: 180px;
+}
+
+.navbar-custom .nav-link:hover {
+    color: blue !important;
+}
+
+.navbar-custom .nav-link i {
+    color: blue !important;
+}
+
+i.fas.fa-circle.nav-icon {
+    font-size: 12px !important;
+}
+
+.preloader.flex-column.justify-content-center.align-items-center {
+    display: none;
+}
+
+p.p-tag {
+    margin-bottom: 3px;
+    color: darkblue;
+}
+
+.st-back {
+    background-color: #dcdce469;
+    border-bottom: 1px solid #9e9e9e38
+}
+
+.card-header {
+    background-color: #f8f9fa !important;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show>.nav-link {
+    color: #000 !important;
+    background-color: #fff !important;
+    border: 1px solid #dee2e6;
+}
+
+.card-body {
+    background-color: #f8f9fa;
+}
+
+.st-back li.nav-item {
+    color: #3F51B5;
+    font-weight: bold;
+}
+
+.card {
+    margin-top: 5px;
+}
+
+.card-header {
+    background-color: white !important;
+}
+
+.doctor-name-container {
+    background-color: #b3e5fc !important;
+    /* margin: 20px 0 !important; */
+}
+
+.doctor-name-heading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #01579b;
+}
+
+.taka-small {
+    font-size: 20px;
+}
+
+.taka-large {
+    font-size: 30px;
+    margin-right: 2px;
+}
+
+.custom-max-w {
+    max-width: 40px;
+}
+
+.custom-notice-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #01579b;
+}
+
+@media (min-width: 768px) {
+    .custom-max-w {
+        max-width: 60px;
+    }
+
+    .custom-notice-title {
+        font-size: 1.3rem;
+    }
+}

@@ -1,0 +1,135 @@
+/* Enhance the auth card */
+    .auth-card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        max-width: 450px;
+        width: 100%;
+        margin: 2rem auto;
+    }
+    
+    /* Logo styling */
+    .auth-card img {
+        display: block;
+        margin: 0 auto;
+        transition: transform 0.3s ease;
+    }
+    
+    .auth-card img:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Title styling */
+    .auth-card h1 {
+        text-align: center;
+        color: #0071C1 !important;
+        margin-top: 15px;
+        font-size: 1.8rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Form inputs styling */
+    .auth-card input[type="text"],
+    .auth-card input[type="password"] {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .auth-card input[type="text"]:focus,
+    .auth-card input[type="password"]:focus {
+        border-color: #0099ff;
+        box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.2);
+        outline: none;
+    }
+    
+    /* Labels styling */
+    .auth-card label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+        font-size: 0.95rem;
+    }
+    
+    /* Error messages */
+    .text-danger {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        color: #dc2626;
+    }
+    
+    /* Password toggle button */
+    .relative button {
+        color: #6b7280;
+        transition: color 0.3s;
+    }
+    
+    .relative button:hover {
+        color: #0071C1;
+    }
+    
+    /* Remember me checkbox */
+    #remember_me {
+        height: 1rem;
+        width: 1rem;
+        border-radius: 0.25rem;
+        border-color: #d1d5db;
+        color: #0071C1;
+    }
+    
+    /* Forgot password link */
+    .auth-card a {
+        font-size: 0.875rem;
+        color: #4b5563;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+    
+    .auth-card a:hover {
+        color: #0071C1;
+        text-decoration: underline;
+    }
+    
+    /* Login button */
+    .btn-primary {
+        background-color: #0071C1 !important;
+        color: white !important;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-primary:hover {
+        background-color: #005a9e !important;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+        .auth-card {
+            padding: 1.5rem;
+            margin: 1rem;
+            max-width: none;
+        }
+        
+        .flex.items-center.justify-end {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            margin-left: 0 !important;
+            margin-top: 1rem;
+        }
+    }
