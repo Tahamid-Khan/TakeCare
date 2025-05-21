@@ -139,14 +139,38 @@ class DashboardController extends Controller
         }
     }
 
-    public function getBedsByWard(Request $request)
-    {
-        $beds = Bed::where('ward_id', $request->ward_id)
-            ->where('bed_status', 'empty')
-            ->get();
+    // public function getBedsByWard(Request $request)
+    // {
+    //     $beds = Bed::where('ward_id', $request->ward_id)
+    //         ->where('bed_status', 'empty')
+    //         ->get();
 
+    //     return response()->json($beds);
+    // }
+public function getBedsByWard(Request $request)
+{
+    try {
+        $wardId = $request->ward_id;
+        
+        // Validate input
+        if (!$wardId) {
+            return response()->json(['error' => 'Ward ID is required'], 400);
+        }
+        
+        // Get beds that are empty and belong to the selected ward
+        $beds = Bed::where('ward_id', $wardId)
+                   ->where('bed_status', 'occupied')
+                   ->get();
+                   
+        // Return JSON response
         return response()->json($beds);
+    } catch (\Exception $e) {
+        // Log the error
+        \Log::error('Error fetching beds: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to load beds'], 500);
     }
+}
+
 
     public function getMedicine(Request $request)
     {

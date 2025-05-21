@@ -457,31 +457,49 @@
     </script>
 
     <script>
-        $(document).ready(function() {
-            $('#ward_id').on('change', function() {
-                let wardId = $(this).val();
-
-                if (wardId) {
-                    $.ajax({
-                        url: '{{ route('get.beds.by.ward') }}',
-                        type: 'GET',
-                        data: {
-                            ward_id: wardId
-                        },
-                        success: function(data) {
-                            $('#bed_id').empty();
-                            $('#bed_id').append('<option value="">Select Bed</option>');
-                            $.each(data, function(key, bed) {
-                                $('#bed_id').append('<option value="' + bed.id + '">' +
-                                    bed.bed_number + '</option>');
-                            });
-                        }
-                    });
-                } else {
-                    $('#bed_id').empty();
+   $('#ward_id').on('change', function() {
+    let wardId = $(this).val();
+    
+    $('#bed_id').empty();
+    
+    if (wardId) {
+        $('#bed_id').append('<option value="">Loading beds...</option>');
+        
+        $.ajax({
+            url: "{{ route('get.beds.by.ward') }}",
+            type: "GET",
+            data: { ward_id: wardId },
+            dataType: "json",
+            success: function(response) {
+                $('#bed_id').empty();
+                
+                // Check if response is an array and has items
+                if (Array.isArray(response) && response.length > 0) {
                     $('#bed_id').append('<option value="">Select Bed</option>');
+                    $.each(response, function(key, bed) {
+                        $('#bed_id').append('<option value="' + bed.id + '">Bed ' + bed.bed_number + '</option>');
+                    });
+                } 
+                // Check if it's a status message
+                else if (response.status === 'no_beds') {
+                    $('#bed_id').append('<option value="">' + response.message + '</option>');
                 }
-            });
+                // Default empty case
+                else {
+                    $('#bed_id').append('<option value="">No available beds in this ward</option>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", xhr.responseText);
+                $('#bed_id').empty();
+                $('#bed_id').append('<option value="">Error loading beds</option>');
+            }
         });
+    } else {
+        $('#bed_id').append('<option value="">Select Ward First</option>');
+    }
+});
+
+
     </script>
 @endpush

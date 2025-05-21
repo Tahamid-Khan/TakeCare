@@ -408,6 +408,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/create', [SuperAdminController::class, 'adminCreate'])->name('admin.create');
         Route::post('save/admin', [SuperAdminController::class, 'saveAdmin'])->name('admin.save');
         Route::get('admin/edit/{id}', [SuperAdminController::class, 'adminEdit']);
+Route::get('admin/delete/{id}', [App\Http\Controllers\Admin\SuperAdminController::class, 'delete'])->name('admin.delete');
 
         // DB Archive
         Route::get('/db-archives', [DBArchiveController::class, 'index'])->name('db-archive');

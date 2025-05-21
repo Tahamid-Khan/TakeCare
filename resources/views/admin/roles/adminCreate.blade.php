@@ -8,7 +8,7 @@
                     @if (isset($admin->id) && $admin->id != null)
                         <h2 class="h2 font-weight-bold">Edit User</h2>
                     @else
-                        <h2 class="h2 font-weight-bold">Add New User</h2>
+                        <h2 class="h2 font-weight-bold">Add New Users</h2>
                     @endif
 
                 </div>

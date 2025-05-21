@@ -13,7 +13,7 @@
                     </div>
                     <div class="col-sm-6">
                         <div class="card-body flex-row text-right">
-                            <a href="{{route('role.create')}}" class="btn btn-sm btn-secondary my-2" style="line-height: 1.5 !important;">Add New User</a>
+                            <a href="{{route('role.create')}}" class="btn btn-sm btn-secondary my-2" style="line-height: 1.5 !important;">Add New Users</a>
 
                         </div>
                     </div>

@@ -60,6 +60,13 @@
                 "responsive": true,
                 "lengthChange": false,
                 "autoWidth": false,
+                /**
+                 * Sets the default sorting order for the DataTable.
+                 * Sorts the table by the first column (Patient ID) in descending order.
+                 * 
+                 * @type {Array} Sorting configuration for DataTable initialization
+                 */
+                "order": [[0, 'desc']], // Sort by first column (Patient ID) in descending order
                 "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
             }).buttons().container().appendTo('#branch_wrapper .col-md-6:eq(0)');
         });

@@ -53,56 +53,81 @@ class NoticeBoardController extends Controller
     }
 
 
-    public function store(Request $request)
-    {
-        //        hr or admin can view this page else redirect to home page
-        $this->userType('hr', 'admin');
-        //                dd($request->all());
-        try {
-            $validator = Validator::make($request->all(), [
-                'notice_title' => 'required',
-                'department' => 'required',
-                'notice_type' => 'required',
-                'notice_file' => 'required',
-                'notice_description' => 'required',
-            ]);
-            if ($validator->fails()) {
-                Alert::toast('Please fill all the fields', 'error');
-                return redirect()->back()->withErrors($validator)->withInput();
-            }
-            DB::beginTransaction();
-            $notice = new Notice();
-            $notice->title = $request->notice_title;
-            $notice->type = $request->notice_type;
-            $notice->description = $request->notice_description;
-            //        save the file
-            $file = $request->file('notice_file');
-            $file_name = time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/notice'), $file_name);
-            $notice->file = $file_name;
-            $notice->save();
+ public function store(Request $request)
+{
+    // hr or admin can view this page else redirect to home page
+    $this->userType('hr', 'admin');
+    
+    try {
+        $validator = Validator::make($request->all(), [
+            'notice_title' => 'required',
+            'department' => 'required|array',
+            'notice_type' => 'required',
+            'notice_file' => 'required|file|mimes:pdf',
+            'notice_description' => 'required',
+        ]);
 
-            $noticeDepartmentPivotData = [];
-            foreach ($request->department as $department) {
-                $noticeDepartmentPivotData[] = [
-                    'notice_id' => $notice->id,
-                    'department_id' => $department,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-            NoticeDepartmentPivot::insert($noticeDepartmentPivotData);
-
-            DB::commit();
-            Alert::toast('Notice uploaded successfully', 'success');
-            return redirect()->back();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Alert::toast('Something went wrong', 'error');
-            return redirect()->back();
+        if ($validator->fails()) {
+            Alert::toast('Please fill all the fields correctly', 'error')->width('375px');
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        DB::beginTransaction();
+        
+        $notice = new Notice();
+        $notice->title = $request->notice_title;
+        $notice->type = $request->notice_type;
+        // Remove the description field as it doesn't exist in the database
+        // $notice->description = $request->notice_description;
+        
+        // Handle file upload
+        if ($request->hasFile('notice_file')) {
+            $file = $request->file('notice_file');
+            $file_name = time() . '.' . $file->getClientOriginalExtension();
+            
+            // Create directory if it doesn't exist
+            $uploadPath = public_path('uploads/notice');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+            
+            $file->move($uploadPath, $file_name);
+            $notice->file = $file_name;
+        }
+        
+        $notice->save();
+        
+        // Handle department relationships
+        $noticeDepartmentPivotData = [];
+        foreach ($request->department as $department) {
+            // Skip 'all' option if it's in the array
+            if ($department === 'all') continue;
+            
+            $noticeDepartmentPivotData[] = [
+                'notice_id' => $notice->id,
+                'department_id' => $department,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+        
+        // Only insert if there are departments to add
+        if (!empty($noticeDepartmentPivotData)) {
+            NoticeDepartmentPivot::insert($noticeDepartmentPivotData);
+        }
+        
+        DB::commit();
+        Alert::toast('Notice uploaded successfully', 'success')->width('375px');
+        return redirect()->route('notice.index');
+        
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Notice upload error: ' . $e->getMessage());
+        Alert::toast('Something went wrong: ' . $e->getMessage(), 'error')->width('375px');
+        return redirect()->back()->withInput();
     }
+}
+
 
     public function show($id)
     {

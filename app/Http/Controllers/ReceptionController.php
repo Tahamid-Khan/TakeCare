@@ -26,7 +26,19 @@ use App\Models\TestList;
 use App\Models\Ward;
 use Carbon\Carbon;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\Factory;/**
+ * Approves a patient's discharge request and updates related database records.
+ * 
+ * This method performs the following actions:
+ * - Updates the discharge request status to 'approved'
+ * - Sets the discharge date to the current timestamp
+ * - Clears the doctor assignment for the patient
+ * - Marks the patient's bed as empty
+ * 
+ * @param int $id The ID of the discharge request to be approved
+ * @return void
+ * @throws Exception If there are issues with database transactions
+ */
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -54,7 +66,7 @@ class ReceptionController extends Controller
     public function admitRequest()
     {
         // patientLists
-        $data['patientLists'] = PatientAdmitRequest::where('status', 'pending')->with('patient', 'doctor')->orderBy('id', 'desc')->get();
+        $data['patientLists'] = PatientAdmitRequest::where('status', 'approved')->with('patient', 'doctor')->orderBy('id', 'desc')->get();
         return view('reception.admit-request', $data);
     }
 
@@ -117,61 +129,124 @@ class ReceptionController extends Controller
      * @param Request $request
      * @return Application|RedirectResponse|Redirector
      */
-    public function store(Request $request)
-    {
-        //        dd($request->all());
-        DB::beginTransaction();
-        try {
-            if ($request->patient_id == null) {
-                $patient = new Patient();
-            } else {
-                $patient = Patient::findOrFail($request->patient_id);
-            }
-            $patient->name = $request->name;
-            $patient->gender = $request->gender;
-            $patient->age = $request->age;
-            $patient->blood_group = $request->blood_group;
-            $patient->mobile = $request->mobile;
-            $patient->address = $request->address;
-            $patient->guardian_mobile = $request->guardian_mobile;
-            $patient->patient_summary = $request->patient_summary;
-            $patient->patient_type = $request->patient_type;
-            $patient->reference = $request->reference;
-            $patient->doctor_id = $request->doctor_id;
-            $patient->save();
+    // public function store(Request $request)
+    // {
+    //     //        dd($request->all());
+    //     DB::beginTransaction();
+    //     try {
+    //         if ($request->patient_id == null) {
+    //             $patient = new Patient();
+    //         } else {
+    //             $patient = Patient::findOrFail($request->patient_id);
+    //         }
+    //         $patient->name = $request->name;
+    //         $patient->gender = $request->gender;
+    //         $patient->age = $request->age;
+    //         $patient->blood_group = $request->blood_group;
+    //         $patient->mobile = $request->mobile;
+    //         $patient->address = $request->address;
+    //         $patient->guardian_mobile = $request->guardian_mobile;
+    //         $patient->patient_summary = $request->patient_summary;
+    //         $patient->patient_type = $request->patient_type;
+    //         $patient->reference = $request->reference;
+    //         $patient->doctor_id = $request->doctor_id;
+    //         $patient->save();
 
 
-            $patientId = $patient->id;
+    //         $patientId = $patient->id;
 
-            // check if the patient is already in the bed
-            $checkDuplicateBedBooking = Bed::where('patient_id', $patientId)->first();
-            if ($checkDuplicateBedBooking) {
-                Bed::findOrFail($checkDuplicateBedBooking->id)->update([
-                    'bed_status' => "empty",
-                    'patient_id' => null
-                ]);
-            }
+    //         // check if the patient is already in the bed
+    //         $checkDuplicateBedBooking = Bed::where('patient_id', $patientId)->first();
+    //         if ($checkDuplicateBedBooking) {
+    //             Bed::findOrFail($checkDuplicateBedBooking->id)->update([
+    //                 'bed_status' => "empty",
+    //                 'patient_id' => null
+    //             ]);
+    //         }
 
-            $bookBed = Bed::findOrFail($request->bed_id);
-            //            dd($bookBed, $request->bed_id, $request->ward_id);
-            $bookBed->bed_status = "occupied";
-            $bookBed->patient_id = $patientId;
-            $bookBed->save();
+    //         $bookBed = Bed::findOrFail($request->bed_id);
+    //         //            dd($bookBed, $request->bed_id, $request->ward_id);
+    //         $bookBed->bed_status = "occupied";
+    //         $bookBed->patient_id = $patientId;
+    //         $bookBed->save();
 
-            // make admit request status to approved
-            PatientAdmitRequest::where('patient_id', $patientId)->where('status', 'pending')->update(['status' => 'approved']);
+    //         // make admit request status to approved
+    //         PatientAdmitRequest::where('patient_id', $patientId)->where('status', 'pending')->update(['status' => 'approved']);
 
 
-            DB::commit();
-            Alert::toast('Patient information successfully added', 'success')->width('375px');
-            return redirect()->route('reception');
-        } catch (Exception $e) {
-            DB::rollback();
-            Alert::toast('Patient information not added successfully', 'error')->width('570px');
-            return redirect()->back();
+    //         DB::commit();
+    //         Alert::toast('Patient information successfully added', 'success')->width('375px');
+    //         return redirect()->route('reception');
+    //     } catch (Exception $e) {
+    //         DB::rollback();
+    //         Alert::toast('Patient information not added successfully', 'error')->width('570px');
+    //         return redirect()->back();
+    //     }
+
+    // }
+public function store(Request $request)
+{
+    //        dd($request->all());
+    DB::beginTransaction();
+    try {
+        if ($request->patient_id == null) {
+            $patient = new Patient();
+            $isNewPatient = true;
+        } else {
+            $patient = Patient::findOrFail($request->patient_id);
+            $isNewPatient = false;
+        }
+        $patient->name = $request->name;
+        $patient->gender = $request->gender;
+        $patient->age = $request->age;
+        $patient->blood_group = $request->blood_group;
+        $patient->mobile = $request->mobile;
+        $patient->address = $request->address;
+        $patient->guardian_mobile = $request->guardian_mobile;
+        $patient->patient_summary = $request->patient_summary;
+        $patient->patient_type = $request->patient_type;
+        $patient->reference = $request->reference;
+        $patient->doctor_id = $request->doctor_id;
+        $patient->save();
+
+        $patientId = $patient->id;
+
+        // check if the patient is already in the bed
+        $checkDuplicateBedBooking = Bed::where('patient_id', $patientId)->first();
+        if ($checkDuplicateBedBooking) {
+            Bed::findOrFail($checkDuplicateBedBooking->id)->update([
+                'bed_status' => "empty",
+                'patient_id' => null
+            ]);
         }
 
+        $bookBed = Bed::findOrFail($request->bed_id);
+        //            dd($bookBed, $request->bed_id, $request->ward_id);
+        $bookBed->bed_status = "occupied";
+        $bookBed->patient_id = $patientId;
+        $bookBed->save();
+
+        // Update existing pending requests to approved
+        PatientAdmitRequest::where('patient_id', $patientId)
+            ->where('status', 'pending')
+            ->update(['status' => 'approved']);
+        
+        // Create a new admit request record with approved status
+        $admitRequest = new PatientAdmitRequest();
+        $admitRequest->patient_id = $patientId;
+        $admitRequest->doctor_id = $request->doctor_id;
+        $admitRequest->status = 'approved';
+        $admitRequest->save();
+
+        DB::commit();
+        Alert::toast('Patient information successfully added', 'success')->width('375px');
+        return redirect()->route('reception');
+    } catch (Exception $e) {
+        DB::rollback();
+        Alert::toast('Patient information not added successfully', 'error')->width('570px');
+        return redirect()->back();
     }
+}
 
     public function edit($id)
     {

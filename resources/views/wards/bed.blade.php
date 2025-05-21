@@ -139,7 +139,7 @@
                                                 </div>
 
                                                 <div class="form-group">
-                                                    <label for="add-ward-no">Ward No</label>
+                                                    <label for="add-ward-no">Ward Name</label>
                                                     <select class="form-control" id="add-ward-no" name="ward_id">
                                                         <option selected disabled>Please Select</option>
                                                         @foreach ($wards as $item)
