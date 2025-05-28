@@ -57,13 +57,13 @@
 @endsection
 @push('custom_js')
     <script>
-        $(function() {
-            $("#classList").DataTable({
-                "responsive": true,
-                "lengthChange": false,
-                "autoWidth": false,
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-            }).buttons().container().appendTo('#branch_wrapper .col-md-6:eq(0)');
-        });
+      $("#classList").DataTable({
+    "responsive": true,
+    "lengthChange": false,
+    "autoWidth": false,
+    "order": [[0, "desc"]],
+    "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
+}).buttons().container().appendTo('#branch_wrapper .col-md-6:eq(0)');
+
     </script>
 @endpush
