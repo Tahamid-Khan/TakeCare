@@ -135,12 +135,12 @@
                                                 <div class="form-group" id="bed_no">
                                                     <label for="add-bed-no">Bed No</label>
                                                     <input type="number" class="form-control" name="bed_number"
-                                                           id="add-bed-no">
+                                                           id="add-bed-no" required>
                                                 </div>
 
                                                 <div class="form-group">
                                                     <label for="add-ward-no">Ward Name</label>
-                                                    <select class="form-control" id="add-ward-no" name="ward_id">
+                                                    <select class="form-control" id="add-ward-no" name="ward_id" required>
                                                         <option selected disabled>Please Select</option>
                                                         @foreach ($wards as $item)
                                                             <option value="{{ $item->id }}">{{ $item->name }}</option>
@@ -151,7 +151,15 @@
                                                 <div class="form-group">
                                                     <label for="add-bed-type">Bed Type</label>
                                                     <input type="text" class="form-control" id="add-bed-type"
-                                                           name="bed_type">
+                                                           name="bed_type" required>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="add-bed-status">Bed Status</label>
+                                                    <select class="form-control" id="add-bed-status" name="bed_status" required>
+                                                        <option value="empty" selected>Empty</option>
+                                                        <option value="occupied">Occupied</option>
+                                                    </select>
                                                 </div>
                                             </div>
                                             <div class="modal-footer">

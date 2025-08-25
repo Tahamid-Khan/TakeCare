@@ -24,7 +24,12 @@ class OPDController extends Controller
     public function list($id)
     {
         $today = date('Y-m-d');
-        $query = OPDPatientSerial::where('doctor_id', $id)->where('status', 'pending')->where('date', $today)->orderBy('id', 'desc')->with('patient');
+        $query = OPDPatientSerial::where('doctor_id', $id)
+            ->where('status', 'pending')
+            ->where('date', '>=', $today)
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'desc')
+            ->with('patient');
         $data['patientLists'] = $query->get();
         $data['totalPatient'] = $query->count();
         return view('opd.patient-list', $data);

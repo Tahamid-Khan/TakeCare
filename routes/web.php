@@ -433,4 +433,12 @@ Route::get('admin/delete/{id}', [App\Http\Controllers\Admin\SuperAdminController
     //    Route::get('pathology/info/{id}', [PathologyController::class, 'getPatientName'])->name('pathology.info');
     //    Route::get('pathology/report', [PathologyController::class, 'report'])->name('pathology.report');
 
+    // OPD Management (Admin only)
+    Route::group(['middleware' => ['checkUserType:admin']], function () {
+        Route::get('/opd-management', [App\Http\Controllers\OPDManagementController::class, 'index'])->name('opd.management');
+        Route::get('/opd-management/doctor/{doctorId}', [App\Http\Controllers\OPDManagementController::class, 'doctorPatients'])->name('opd.management.doctor-patients');
+        Route::get('/opd-management/doctor/{doctorId}/patient/{patientId}/edit', [App\Http\Controllers\OPDManagementController::class, 'editPatient'])->name('opd.management.edit-patient');
+        Route::put('/opd-management/doctor/{doctorId}/patient/{patientId}', [App\Http\Controllers\OPDManagementController::class, 'updatePatient'])->name('opd.management.update-patient');
+        Route::delete('/opd-management/doctor/{doctorId}/patient/{patientId}', [App\Http\Controllers\OPDManagementController::class, 'deletePatient'])->name('opd.management.delete-patient');
+    });
 });

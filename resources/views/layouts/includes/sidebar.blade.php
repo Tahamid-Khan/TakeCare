@@ -287,10 +287,17 @@
                 @enduserType
                 <ul class="nav @userType('admin') nav-treeview @enduserType">
                     <li class="nav-item">
+                        @userType('admin')
+                        <a href="{{ route('opd.management') }}" class="nav-link {{ Route::currentRouteName() == 'opd.management' || Route::currentRouteName() == 'opd.management.doctor-patients' ? 'selected-item' : '' }}">
+                            <i class="fas fa-circle nav-icon "></i>
+                            <p>OPD Management</p>
+                        </a>
+                        @else
                         <a href="{{ route('opd.list', [($id = 10)]) }}" class="nav-link {{ Route::currentRouteName() == 'opd.list' || Route::currentRouteName() == 'opd.view' ? 'selected-item' : '' }}">
                             <i class="fas fa-circle nav-icon "></i>
                             <p>OPD Patient</p>
                         </a>
+                        @enduserType
                     </li>
                 </ul>
             </li>

@@ -91,6 +91,7 @@ class WardBedController extends Controller
             'ward_id' => 'required',
             'bed_number' => 'required',
             'bed_type' => 'required',
+            'bed_status' => 'required|in:empty,occupied',
         ]);
 
         try {
@@ -98,7 +99,7 @@ class WardBedController extends Controller
                 'ward_id' => $request->ward_id,
                 'bed_number' => $request->bed_number,
                 'bed_type' => $request->bed_type,
-                'bed_status' => 'empty',
+                'bed_status' => $request->bed_status,
             ]);
             Alert::toast('Bed Added Successfully.', 'success')->width('375px');
             return redirect()->back();
