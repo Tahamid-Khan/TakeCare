@@ -158,7 +158,15 @@
             const remarks = button.data('remark');
             let materialsUsed = button.data('material-used');
 
-            materialsUsed = materialsUsed ? materialsUsed.map(material => material.name).join(', ') : 'N/A';
+            if (materialsUsed && Array.isArray(materialsUsed)) {
+                materialsUsed = materialsUsed.map(material => {
+                    return typeof material === 'object' && material.name ? material.name : material;
+                }).join(', ');
+            } else if (typeof materialsUsed === 'string') {
+                materialsUsed = materialsUsed;
+            } else {
+                materialsUsed = 'N/A';
+            }
 
 
             operationStart = operationStart ? moment(operationStart, 'HH:mm:ss').format('hh:mm A') : 'N/A';

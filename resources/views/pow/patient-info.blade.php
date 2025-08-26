@@ -33,7 +33,7 @@
                                         <p class="my-2"><strong>Guardian No
                                                 : </strong>{{ $patientData->operation->patient->guardian_mobile }} </p>
                                         <p class="my-2"><strong>Summary
-                                                : </strong>{{ $patientData->operation->patient->patient_summary }} </p>
+                                                : </strong>{{ $patientData->operation->patient->patient_summary ?? 'No summary available' }} </p>
                                     </div>
                                     {{--<div class="col-4">--}}
                                     {{--  <p>Doctor : {{ $doctor->name }} </p>--}}

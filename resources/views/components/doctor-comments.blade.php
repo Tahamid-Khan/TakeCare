@@ -15,7 +15,7 @@
                 <tr>
 
                     <td>{{ date('j F Y, h:i A', strtotime($item->date_time)) }}</td>
-                    <td>{{ $item->doctor->doctor_id }}</td>
+                    <td>{{ $item->doctor->doctor_id ?? 'N/A' }}</td>
                     <td>{{ $item->doctor->name }}</td>
                     <td>{{ $item->summary }}</td>
                 </tr>

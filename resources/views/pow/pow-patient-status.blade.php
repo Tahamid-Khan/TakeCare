@@ -156,10 +156,10 @@
                                 <tr>
                                     <td><i class="fas fa-heartbeat status-icon pr-2 text-danger"></i>Pulse</td>
                                     <td>
-                                        @if ($patientStatus['pulse_rate'] == 0)
+                                        @if ($patientStatus->pulse_rate == 0)
                                             <p class="text-danger"> Not Updated </p>
                                         @else
-                                            {{ $patientStatus['pulse_rate'] }} BPM
+                                            {{ $patientStatus->pulse_rate }} BPM
                                         @endif
 
                                     </td>
@@ -168,20 +168,20 @@
                                     <td><i class="fas fa-lungs status-icon pr-2 text-info"></i>
                                         Oxygen Level</td>
                                     <td>
-                                        @if ($patientStatus['oxygen_level'] == 0)
+                                        @if ($patientStatus->oxygen_level == 0)
                                             <p class="text-danger"> Not Updated </p>
                                         @else
-                                            {{ $patientStatus['oxygen_level'] }} %
+                                            {{ $patientStatus->oxygen_level }} %
                                         @endif
                                     </td>
                                 </tr>
                                 <tr>
                                     <td><i class="fas fa-tint status-icon pr-2 text-danger"></i>Blood Pressure</td>
                                     <td>
-                                        @if ($patientStatus['blood_pressure'] == 0)
+                                        @if ($patientStatus->blood_pressure == 0)
                                             <p class="text-danger"> Not Updated </p>
                                         @else
-                                            {{ $patientStatus['blood_pressure'] }} mmHg
+                                            {{ $patientStatus->blood_pressure }} mmHg
                                         @endif
                                     </td>
                                 </tr>
@@ -189,10 +189,10 @@
                                     <td> <i class="fas fa-thermometer-half status-icon pr-2 text-primary"></i>
                                         Body Temperature</td>
                                     <td>
-                                        @if ($patientStatus['temperature'] == 0)
+                                        @if ($patientStatus->temperature == 0)
                                             <p class="text-danger"> Not Updated </p>
                                         @else
-                                            {{ $patientStatus['temperature'] }} °F
+                                            {{ $patientStatus->temperature }} °F
                                         @endif
                                     </td>
                                 </tr>
@@ -231,7 +231,10 @@
                                                 </div>
                                                 @foreach ($patientActiveMedicines as $item)
                                                     @php
-                                                        $schedule = json_decode($item->schedule);
+                                                        $schedule = $item->schedule ? json_decode($item->schedule, true) : [];
+                                                        if (!is_array($schedule)) {
+                                                            $schedule = [];
+                                                        }
                                                     @endphp
 
 
@@ -247,13 +250,13 @@
                                                             </small>
                                                         </td>
                                                         <td>
-                                                            <small>{{ $item->taking_time }} Meal</small>
+                                                            <small>{{ $item->taking_time ?? 'Before' }} Meal</small>
                                                         </td>
                                                         <td>
-                                                            <small>{{ $item->dose }}</small>
+                                                            <small>{{ $item->dose ?? 'N/A' }}</small>
                                                         </td>
                                                         <td>
-                                                            <small>{{ $item->duration }}</small>
+                                                            <small>{{ $item->duration ?? 'N/A' }}</small>
                                                         </td>
                                                         <td></td>
                                                         <td>

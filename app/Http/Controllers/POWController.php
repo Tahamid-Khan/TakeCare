@@ -49,7 +49,14 @@ class POWController extends Controller
             $data['previousOperation'] = Operation::where('patient_id', $patientId)->where('iscomplete', 1)->with('doctor', 'service')->get();
             $data['nextOperation'] = Operation::where('patient_id', $patientId)->where('iscomplete', 0)->with('doctor', 'service')->get();
             //            patient_status
-            $data['patientStatus'] = PatientStatus::where('patient_id', $patientId)->latest()->first();
+            $patientStatus = PatientStatus::where('patient_id', $patientId)->latest()->first();
+            $data['patientStatus'] = $patientStatus ?: (object)[
+                'pulse_rate' => 0,
+                'oxygen_level' => 0,
+                'blood_pressure' => 0,
+                'temperature' => 0,
+                'created_at' => now()
+            ];
             $data['patientActiveMedicines'] = PatientMedicine::where('patient_id', $patientId)->where('status', 'active')->orderBy('date', 'desc')->get();
         } else {
             Alert::toast('Patient data not found', 'error')->width('570px');
