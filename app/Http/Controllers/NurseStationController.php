@@ -46,9 +46,9 @@ class NurseStationController extends Controller
 
             \Log::info('Nurse dashboard - Ward ID: ' . $wardNo . ', User ID: ' . auth()->user()->id);
 
-            $data['patients'] = Bed::where('bed_status', '=', 'occupied')
-                ->where('ward_id', $wardNo)
-                ->whereNotNull('patient_id')
+            $data['patients'] = Bed::where('beds.bed_status', '=', 'occupied')
+                ->where('beds.ward_id', $wardNo)
+                ->whereNotNull('beds.patient_id')
                 ->with([
                     'patient' => function ($query) {
                         $query->with([
@@ -61,6 +61,9 @@ class NurseStationController extends Controller
                     },
                     'Ward'
                 ])
+                ->join('patients', 'beds.patient_id', '=', 'patients.id')
+                ->orderBy('patients.name', 'desc')
+                ->select('beds.*')
                 ->get();
 
             \Log::info('Found ' . $data['patients']->count() . ' occupied beds in ward ' . $wardNo);
@@ -75,8 +78,8 @@ class NurseStationController extends Controller
             
         } else {
             // For admin users, show all occupied beds
-            $data['patients'] = Bed::where('bed_status', '=', 'occupied')
-                ->whereNotNull('patient_id')
+            $data['patients'] = Bed::where('beds.bed_status', '=', 'occupied')
+                ->whereNotNull('beds.patient_id')
                 ->with([
                     'patient' => function ($query) {
                         $query->with([
@@ -89,6 +92,9 @@ class NurseStationController extends Controller
                     },
                     'Ward'
                 ])
+                ->join('patients', 'beds.patient_id', '=', 'patients.id')
+                ->orderBy('patients.name', 'desc')
+                ->select('beds.*')
                 ->get();
 
             \Log::info('Admin view - Found ' . $data['patients']->count() . ' total occupied beds');
@@ -163,10 +169,18 @@ class NurseStationController extends Controller
 
     public function dischargeLetter($id)
     {
-        $getDischargeInfo = PatientDischarge::where('patient_id', $id)->first();
-        if ($getDischargeInfo->status !== 'pending') {
+        $getDischargeInfo = PatientDischarge::find($id);
+        
+        if (!$getDischargeInfo) {
+            Alert::toast('Discharge request not found', 'error');
             return redirect()->route('nurse.dashboard');
         }
+        
+        if ($getDischargeInfo->status !== 'pending') {
+            Alert::toast('Discharge request is not in pending status', 'warning');
+            return redirect()->route('nurse.dashboard');
+        }
+        
         $patientID = $getDischargeInfo->patient_id;
         $data['dischargeInfo'] = $getDischargeInfo;
 
