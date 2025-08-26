@@ -11,6 +11,7 @@ use App\Models\PatientDailySummary;
 use App\Models\PatientMedicine;
 use App\Models\PatientStatus;
 use App\Models\POWPatient;
+use App\Models\Ward;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -21,6 +22,11 @@ class POWController extends Controller
     public function index()
     {
         $data['patientsData'] = POWPatient::with('operation.patient', 'operation.doctor', 'doctor', 'bed')->get();
+        
+        // Find POW ward and count empty beds
+        $powWard = Ward::where('type', 'POW')->first();
+        $data['emptyBeds'] = $powWard ? Bed::where('ward_id', $powWard->id)->where('bed_status', 'empty')->count() : 0;
+        
         //        dd($data['patientsData']);
 
         return view('pow.patient-list', $data);

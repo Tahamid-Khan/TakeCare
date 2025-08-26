@@ -21,7 +21,7 @@
                         <div class="col-12 col-md-3 mb-4">
                             <div class="rounded-lg bg-danger-light p-3 shadow">
                                 <h3 class="mb-2 h5">Total POW Patients</h3>
-                                <p class="h3 font-weight-bold text-danger">154</p>
+                                <p class="h3 font-weight-bold text-danger">{{ count($patientsData) }}</p>
                             </div>
                         </div>
 
@@ -29,7 +29,7 @@
                         <div class="col-12 col-md-3 mb-4">
                             <div class="rounded-lg bg-primary-light p-3 shadow">
                                 <h3 class="mb-2 h5">Empty Beds</h3>
-                                <p class="h3 font-weight-bold text-primary">40</p>
+                                <p class="h3 font-weight-bold text-primary">{{ $emptyBeds }}</p>
                             </div>
                         </div>
                     </div>
