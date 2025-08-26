@@ -30,7 +30,13 @@ class ICUController extends Controller
         // To separate the counts for easier access
         $data['icuPatientsCount'] = $data['countPatients']->where('isICU', 1)->first()->count ?? 0;
         $data['hduPatientsCount'] = $data['countPatients']->where('isICU', 0)->first()->count ?? 0;
+        
+        // Current patients (not discharged)
         $data['patientsData'] = ICUPatient::with('patient', 'doctor', 'bed')->where('isDischarged', 0)->get();
+        
+        // Previous patients (discharged)
+        $data['previousPatientsData'] = ICUPatient::with('patient', 'doctor', 'bed')->where('isDischarged', 1)->get();
+        
         // dd($data['icuPatientsCount']);
 
         return view('icu.icu-dashboard', $data);
@@ -185,7 +191,8 @@ class ICUController extends Controller
             return redirect()->back();
 
         }
-        $data['beds'] = Bed::where('ward_id', 1)->where('bed_status', 'empty')->get();
+        // Get beds from both ICU (ward_id 10) and HDU (ward_id 5) wards
+        $data['beds'] = Bed::whereIn('ward_id', [10, 5])->where('bed_status', 'empty')->get();
         $data['doctors'] = Doctor::where('type', '=', 'icu_doctor')->get();
 //        dd($data['patientData']);
         return view('icu.add-patient-form', $data);

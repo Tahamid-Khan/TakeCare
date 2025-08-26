@@ -32,8 +32,15 @@
                                 <!-- Card 1 -->
                                 <div class="col-12 col-md-4 col-xl-3 mb-4">
                                     <div class="rounded-lg bg-danger-light p-3 shadow">
-                                        <h3 class="mb-2 h5">Total POW Patients</h3>
-                                        <p class="h3 font-weight-bold text-danger">236</p>
+                                        <h3 class="mb-2 h5">
+                                            @userType('nurse')
+                                                Ward Patients
+                                            @enduserType
+                                            @userType('admin')
+                                                Total Patients
+                                            @enduserType
+                                        </h3>
+                                        <p class="h3 font-weight-bold text-danger">{{ $totalPowPatients ?? 0 }}</p>
                                     </div>
                                 </div>
 
@@ -41,7 +48,7 @@
                                 <div class="col-12 col-md-4 col-xl-3 mb-4">
                                     <div class="rounded-lg bg-primary-light p-3 shadow">
                                         <h3 class="mb-2 h5">Pending Discharge</h3>
-                                        <p class="h3 font-weight-bold text-primary">2</p>
+                                        <p class="h3 font-weight-bold text-primary">{{ $pendingDischarge ?? 0 }}</p>
                                     </div>
                                 </div>
                             </div>

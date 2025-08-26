@@ -85,16 +85,84 @@ class WardBedController extends Controller
         return view('wards.bed', $data);
     }
 
+    public function getNextBedNumber($wardId)
+    {
+        try {
+            $ward = Ward::findOrFail($wardId);
+            
+            // Get all existing bed numbers for this ward
+            $existingBedNumbers = Bed::where('ward_id', $wardId)
+                                   ->pluck('bed_number')
+                                   ->toArray();
+            
+            // Find the first available bed number (starting from 1)
+            $nextBedNumber = 1;
+            while (in_array($nextBedNumber, $existingBedNumbers)) {
+                $nextBedNumber++;
+            }
+            
+            // Check if we've reached the ward's total bed capacity
+            if ($nextBedNumber > $ward->total_beds) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ward has reached maximum bed capacity (' . $ward->total_beds . ' beds)',
+                    'next_bed_number' => null,
+                    'existing_beds' => $existingBedNumbers
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'next_bed_number' => $nextBedNumber,
+                'ward_name' => $ward->name,
+                'total_beds' => $ward->total_beds,
+                'current_beds' => count($existingBedNumbers),
+                'existing_beds' => $existingBedNumbers
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving bed information',
+                'next_bed_number' => null
+            ]);
+        }
+    }
+
     public function addBed(Request $request)
     {
         $request->validate([
             'ward_id' => 'required',
-            'bed_number' => 'required',
+            'bed_number' => 'required|integer|min:1',
             'bed_type' => 'required',
             'bed_status' => 'required|in:empty,occupied',
         ]);
 
         try {
+            // Check if bed number already exists in this ward
+            $existingBed = Bed::where('ward_id', $request->ward_id)
+                             ->where('bed_number', $request->bed_number)
+                             ->first();
+            
+            if ($existingBed) {
+                Alert::toast('Bed number ' . $request->bed_number . ' already exists in this ward.', 'error')->width('375px');
+                return redirect()->back();
+            }
+            
+            // Check ward capacity
+            $ward = Ward::findOrFail($request->ward_id);
+            $currentBedCount = Bed::where('ward_id', $request->ward_id)->count();
+            
+            if ($currentBedCount >= $ward->total_beds) {
+                Alert::toast('Ward has reached maximum capacity (' . $ward->total_beds . ' beds).', 'error')->width('375px');
+                return redirect()->back();
+            }
+            
+            if ($request->bed_number > $ward->total_beds) {
+                Alert::toast('Bed number cannot exceed ward capacity (' . $ward->total_beds . ' beds).', 'error')->width('375px');
+                return redirect()->back();
+            }
+
             Bed::create([
                 'ward_id' => $request->ward_id,
                 'bed_number' => $request->bed_number,
@@ -140,8 +208,37 @@ class WardBedController extends Controller
     {
         try {
             $getBed = Bed::findOrFail($id);
+            
+            // Check if bed is currently occupied
+            if ($getBed->bed_status === 'occupied' && $getBed->patient_id !== null) {
+                Alert::toast('Cannot delete bed. Bed is currently occupied by a patient.', 'error')->width('375px');
+                return redirect()->back();
+            }
+            
+            // Check if bed is referenced by any ICU patients (current or discharged)
+            $icuPatients = \App\Models\ICUPatient::where('bed_id', $id)->count();
+            if ($icuPatients > 0) {
+                Alert::toast('Cannot delete bed. This bed has patient history records. Please contact administrator.', 'error')->width('375px');
+                return redirect()->back();
+            }
+            
+            // Check if bed is referenced by any POW patients
+            $powPatients = \App\Models\POWPatient::where('bed_id', $id)->count();
+            if ($powPatients > 0) {
+                Alert::toast('Cannot delete bed. This bed has patient history records. Please contact administrator.', 'error')->width('375px');
+                return redirect()->back();
+            }
+            
             $getBed->delete();
-            Alert::toast('Current Status Added Successfully.', 'success')->width('375px');
+            Alert::toast('Bed Deleted Successfully.', 'success')->width('375px');
+            return redirect()->back();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle foreign key constraint violations
+            if ($e->getCode() == 23000) {
+                Alert::toast('Cannot delete bed. This bed is referenced by patient records.', 'error')->width('375px');
+            } else {
+                Alert::toast('Database error occurred. Please try again.', 'error')->width('375px');
+            }
             return redirect()->back();
         } catch (\Exception $e) {
             Alert::toast('Something went wrong. Please try again.', 'error')->width('375px');

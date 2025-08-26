@@ -50,7 +50,8 @@
                                             <i class="fa fa-edit"></i>
                                         </button>
                                         <form action="{{ route('ward-bed.delete-bed', ['id' => $item->id]) }}"
-                                              method="POST">@csrf
+                                              method="POST" onsubmit="return confirm('Are you sure you want to delete this bed?')">
+                                            @csrf
                                             <button type="submit" class="btn btn-sm btn-danger">
                                                 <i class="fa fa-trash"></i>
                                             </button>
@@ -132,26 +133,27 @@
                                             </div>
 
                                             <div class="modal-body">
+                                                <div class="form-group">
+                                                    <label for="add-ward-no">Ward Name <span class="text-danger">*</span></label>
+                                                    <select class="form-control" id="add-ward-no" name="ward_id" required>
+                                                        <option value="">Please Select Ward First</option>
+                                                        @foreach ($wards as $item)
+                                                            <option value="{{ $item->id }}" data-total-beds="{{ $item->total_beds }}">{{ $item->name }} ({{ $item->total_beds }} beds capacity)</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
                                                 <div class="form-group" id="bed_no">
                                                     <label for="add-bed-no">Bed No</label>
                                                     <input type="number" class="form-control" name="bed_number"
-                                                           id="add-bed-no" required>
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label for="add-ward-no">Ward Name</label>
-                                                    <select class="form-control" id="add-ward-no" name="ward_id" required>
-                                                        <option selected disabled>Please Select</option>
-                                                        @foreach ($wards as $item)
-                                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                                        @endforeach
-                                                    </select>
+                                                           id="add-bed-no" required disabled placeholder="Select ward first">
+                                                    <small class="form-text text-muted" id="bed-info"></small>
                                                 </div>
 
                                                 <div class="form-group">
                                                     <label for="add-bed-type">Bed Type</label>
                                                     <input type="text" class="form-control" id="add-bed-type"
-                                                           name="bed_type" required>
+                                                           name="bed_type" required placeholder="e.g., ICU, General, HDU">
                                                 </div>
 
                                                 <div class="form-group">
@@ -163,7 +165,7 @@
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="submit" class="btn btn-primary">Add</button>
+                                                <button type="submit" class="btn btn-primary" id="add-bed-submit" disabled>Add</button>
                                             </div>
                                         </form>
                                     </div>
@@ -207,6 +209,77 @@
             modal.find('.modal-body select[name="ward_id"]').val(ward);
             modal.find('.modal-body input[name="bed_type"]').val(type);
             modal.find('.modal-body select[name="bed_status"]').val(status);
+        });
+
+        // Handle ward selection in Add Bed modal
+        $('#add-ward-no').on('change', function() {
+            var wardId = $(this).val();
+            var wardName = $(this).find('option:selected').text();
+            
+            if (wardId) {
+                // Show loading state
+                $('#add-bed-no').prop('disabled', true).val('').attr('placeholder', 'Loading...');
+                $('#bed-info').text('Fetching bed information...');
+                $('#add-bed-submit').prop('disabled', true);
+                
+                // Make AJAX call to get next bed number
+                $.ajax({
+                    url: "{{ route('ward-bed.get-next-bed-number', ':wardId') }}".replace(':wardId', wardId),
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#add-bed-no').prop('disabled', false).val(response.next_bed_number);
+                            
+                            var existingBedsText = '';
+                            if (response.existing_beds && response.existing_beds.length > 0) {
+                                existingBedsText = '<br><small class="text-muted">Existing beds: ' + response.existing_beds.sort((a,b) => a-b).join(', ') + '</small>';
+                            }
+                            
+                            $('#bed-info').html('<span class="text-success">✓ Next available bed number: ' + response.next_bed_number + '</span><br>' +
+                                              '<small>Ward capacity: ' + response.current_beds + '/' + response.total_beds + ' beds</small>' +
+                                              existingBedsText);
+                            $('#add-bed-submit').prop('disabled', false);
+                        } else {
+                            $('#add-bed-no').prop('disabled', true).val('').attr('placeholder', 'Ward at capacity');
+                            
+                            var existingBedsText = '';
+                            if (response.existing_beds && response.existing_beds.length > 0) {
+                                existingBedsText = '<br><small class="text-muted">Existing beds: ' + response.existing_beds.sort((a,b) => a-b).join(', ') + '</small>';
+                            }
+                            
+                            $('#bed-info').html('<span class="text-danger">✗ ' + response.message + '</span>' + existingBedsText);
+                            $('#add-bed-submit').prop('disabled', true);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching bed number:', error);
+                        $('#add-bed-no').prop('disabled', true).val('').attr('placeholder', 'Error loading');
+                        $('#bed-info').html('<span class="text-danger">Error loading bed information. Please try again.</span>');
+                        $('#add-bed-submit').prop('disabled', true);
+                    }
+                });
+            } else {
+                // Reset form when no ward is selected
+                $('#add-bed-no').prop('disabled', true).val('').attr('placeholder', 'Select ward first');
+                $('#bed-info').text('');
+                $('#add-bed-submit').prop('disabled', true);
+            }
+        });
+
+        // Reset form when Add Bed modal is closed
+        $('#addBed').on('hidden.bs.modal', function () {
+            $(this).find('form')[0].reset();
+            $('#add-bed-no').prop('disabled', true).attr('placeholder', 'Select ward first');
+            $('#bed-info').text('');
+            $('#add-bed-submit').prop('disabled', true);
+        });
+
+        // Reset form when Add Bed modal is opened
+        $('#addBed').on('show.bs.modal', function () {
+            $('#add-bed-no').prop('disabled', true).attr('placeholder', 'Select ward first');
+            $('#bed-info').text('');
+            $('#add-bed-submit').prop('disabled', true);
         });
     </script>
 @endpush

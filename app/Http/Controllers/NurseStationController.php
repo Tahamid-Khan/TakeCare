@@ -18,36 +18,88 @@ class NurseStationController extends Controller
 {
     public function dashboard()
     {
-
         if (auth()->user()->user_type == 'nurse') {
-            $wardNo = auth()->user()->nurse()->ward_id;
+            // Check if nurse record exists
+            $nurse = auth()->user()->nurse;
+            if (!$nurse) {
+                \Log::error('Nurse record not found for user: ' . auth()->user()->id);
+                Alert::toast('Nurse profile not found. Please contact administrator.', 'error')->width('375px');
+                return view('nurse_station.dashboard', [
+                    'patients' => collect(), 
+                    'ward' => null,
+                    'totalPowPatients' => 0,
+                    'pendingDischarge' => 0
+                ]);
+            }
+
+            $wardNo = $nurse->ward_id;
+            if (!$wardNo) {
+                \Log::error('Ward not assigned to nurse: ' . auth()->user()->id);
+                Alert::toast('Ward not assigned to your profile. Please contact administrator.', 'error')->width('375px');
+                return view('nurse_station.dashboard', [
+                    'patients' => collect(), 
+                    'ward' => null,
+                    'totalPowPatients' => 0,
+                    'pendingDischarge' => 0
+                ]);
+            }
+
+            \Log::info('Nurse dashboard - Ward ID: ' . $wardNo . ', User ID: ' . auth()->user()->id);
 
             $data['patients'] = Bed::where('bed_status', '=', 'occupied')
                 ->where('ward_id', $wardNo)
+                ->whereNotNull('patient_id')
                 ->with([
-                    'patient.doctor',
-                    'Ward',
-                    'patient.patientDischarge' => function ($query) {
-                        $query->where('status', 'pending')
-                            ->orWhere('status', 'generated');
-                    }
+                    'patient' => function ($query) {
+                        $query->with([
+                            'doctor',
+                            'patientDischarge' => function ($subQuery) {
+                                $subQuery->where('status', 'pending')
+                                    ->orWhere('status', 'generated');
+                            }
+                        ]);
+                    },
+                    'Ward'
                 ])
                 ->get();
-        $data['ward'] = Ward::findOrFail($wardNo);
-        }else{
+
+            \Log::info('Found ' . $data['patients']->count() . ' occupied beds in ward ' . $wardNo);
+
+            $data['ward'] = Ward::findOrFail($wardNo);
+            
+            // Calculate statistics for nurse's ward only
+            $data['totalPowPatients'] = $data['patients']->count();
+            $data['pendingDischarge'] = $data['patients']->filter(function($bed) {
+                return $bed->patient && $bed->patient->patientDischarge->isNotEmpty();
+            })->count();
+            
+        } else {
+            // For admin users, show all occupied beds
             $data['patients'] = Bed::where('bed_status', '=', 'occupied')
+                ->whereNotNull('patient_id')
                 ->with([
-                    'patient.doctor',
-                    'Ward',
-                    'patient.patientDischarge' => function ($query) {
-                        $query->where('status', 'pending')
-                            ->orWhere('status', 'generated');
-                    }
+                    'patient' => function ($query) {
+                        $query->with([
+                            'doctor',
+                            'patientDischarge' => function ($subQuery) {
+                                $subQuery->where('status', 'pending')
+                                    ->orWhere('status', 'generated');
+                            }
+                        ]);
+                    },
+                    'Ward'
                 ])
                 ->get();
+
+            \Log::info('Admin view - Found ' . $data['patients']->count() . ' total occupied beds');
+            $data['ward'] = null;
+            
+            // Calculate statistics for all wards
+            $data['totalPowPatients'] = $data['patients']->count();
+            $data['pendingDischarge'] = $data['patients']->filter(function($bed) {
+                return $bed->patient && $bed->patient->patientDischarge->isNotEmpty();
+            })->count();
         }
-
-
 
         return view('nurse_station.dashboard', $data);
     }

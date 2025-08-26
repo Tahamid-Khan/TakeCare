@@ -18,10 +18,45 @@ class Patient extends Model
         parent::boot();
 
         static::creating(function ($patient) {
-            $latestPatient = self::latest()->first();
-            $lastId = $latestPatient ? intval(substr($latestPatient->patient_id, 3)) : 0;
-            $patient->patient_id = 'P' . str_pad($lastId + 1, 6, '0', STR_PAD_LEFT);
+            if (empty($patient->patient_id)) {
+                $patient->patient_id = self::generateUniquePatientId();
+            }
         });
+    }
+
+    /**
+     * Generate a unique patient ID - prevents duplicates
+     */
+    private static function generateUniquePatientId(): string
+    {
+        // Try sequential approach first (up to 5 attempts)
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            // Get the latest patient by patient_id numeric value
+            $latestPatient = self::whereNotNull('patient_id')
+                               ->orderByRaw('CAST(SUBSTRING(patient_id, 2) AS UNSIGNED) DESC')
+                               ->first();
+            
+            $lastId = 0;
+            if ($latestPatient && $latestPatient->patient_id) {
+                // Extract numeric part from patient_id (e.g., P000001 -> 1)
+                $numericPart = preg_replace('/[^0-9]/', '', $latestPatient->patient_id);
+                $lastId = $numericPart ? intval($numericPart) : 0;
+            }
+            
+            // Try next sequential number with attempt offset to avoid collisions
+            $nextId = $lastId + $attempt;
+            $patientId = 'P' . str_pad($nextId, 6, '0', STR_PAD_LEFT);
+            
+            // Check if this ID already exists
+            if (!self::where('patient_id', $patientId)->exists()) {
+                return $patientId;
+            }
+        }
+        
+        // Fallback: use timestamp-based unique ID (guaranteed unique)
+        $timestamp = now()->format('ymdHis'); // YearMonthDayHourMinuteSecond (12 digits)
+        $micro = substr(str_replace('.', '', microtime(true)), -3); // Last 3 digits
+        return 'P' . $timestamp . $micro;
     }
 
 

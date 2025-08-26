@@ -1,32 +1,3 @@
-@php
-    $patientLists = [
-        (object) [
-            'id' => 'P0453',
-            'name' => 'John Doe',
-            'gender' => 'male',
-            'assigned_doctor' => 'Dr. Smith',
-            'icu_hdu' => 'ICU',
-            'bed_no' => 'A-101',
-        ],
-        (object) [
-            'id' => 'P0454',
-            'name' => 'Jane Doe',
-            'gender' => 'female',
-            'assigned_doctor' => 'Dr. Smith',
-            'icu_hdu' => 'HDU',
-            'bed_no' => 'A-102',
-        ],
-        (object) [
-            'id' => 'P0455',
-            'name' => 'John Doe',
-            'gender' => 'male',
-            'assigned_doctor' => 'Dr. Smith',
-            'icu_hdu' => 'ICU',
-            'bed_no' => 'A-101',
-        ],
-    ];
-@endphp
-
 <div class="table-responsive p-4">
     <h2 class="h2">Previous Patient</h2>
     <table class="table table-bordered table-striped" id="classList2">
@@ -37,10 +8,11 @@
         <th>Assigned Doctor</th>
         <th>ICU/HDU</th>
         <th>Bed No</th>
+        <th>Discharge Date</th>
         </thead>
 
         <tbody>
-        @foreach ($patientsData as $item)
+        @foreach ($previousPatientsData as $item)
             <tr>
                 <td>{{ $item->patient->patient_id }}</td>
                 <td>{{ $item->patient->name }}</td>
@@ -48,6 +20,7 @@
                 <td>{{ $item->doctor->name }}</td>
                 <td>{{ $item->isICU == 1 ? "ICU" : "HDU" }}</td>
                 <td>{{ $item->bed->bed_number }}</td>
+                <td>{{ $item->updated_at->format('Y-m-d H:i') }}</td>
             </tr>
         @endforeach
         </tbody>

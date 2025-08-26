@@ -53,6 +53,8 @@ Route::get('', function () {
 Route::get('test', function () {
     return view('admin.permissions.index');
 });
+
+
 Route::get('/login', function () {
     return view('welcome');
 });
@@ -212,7 +214,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     // Nurse Station
-    Route::group(['middleware' => ['checkUserType:nurse']], function () {
+    Route::group(['middleware' => ['checkUserType:nurse,admin']], function () {
         Route::get('/nurse-station/dashboard', [NurseStationController::class, 'dashboard'])->name('nurse.dashboard');
         Route::get('/nurse-station/doctor/{id}', [NurseStationController::class, 'patientList'])->name('nurse.patientList');
         Route::get('/nurse-station/patient/{id}', [NurseStationController::class, 'patientDetails'])->name('nurse.patientDetails');
@@ -327,6 +329,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/bed/add', [WardBedController::class, 'addBed'])->name('ward-bed.add-bed');
         Route::post('/bed/delete/{id}', [WardBedController::class, 'deleteBed'])->name('ward-bed.delete-bed');
         Route::get('/bed', [WardBedController::class, 'showAllBed'])->name('ward-bed.show-all-bed');
+        Route::get('/get-next-bed-number/{wardId}', [WardBedController::class, 'getNextBedNumber'])->name('ward-bed.get-next-bed-number');
 
         // Teacher and staff route
         Route::get('human_resource', [HRController::class, 'index'])->name('human_resource.list');

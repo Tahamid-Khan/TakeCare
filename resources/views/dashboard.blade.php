@@ -174,7 +174,7 @@
                                     <tbody>
                                     <tr>
                                         <td>1</td>
-                                        <td>Dr. John Doe</td>
+                                        <td>Dr. Rahim khan</td>
                                         <td>10:00 AM - 12:00 PM</td>
                                         <td>Heart Surgery</td>
                                         <td>Room 1</td>

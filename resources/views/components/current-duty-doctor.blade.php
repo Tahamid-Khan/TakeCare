@@ -92,24 +92,37 @@
 
 
             <tbody>
-            @foreach ($patients as $item)
-                @if ($item->patient->doctor->employee_status != 'permanent')
+            @forelse ($patients as $item)
+                @if (!$item->patient || !$item->patient->doctor || $item->patient->doctor->employee_status != 'permanent')
                     @continue
                 @endif
                 <tr>
-                    <td>{{ $item->patient->patient_id }}</td>
-                    <td>{{ $item->patient->name }}</td>
-                    <td>{{ $item->patient->gender }} </td>
-                    <td>{{ $item->patient->mobile }}</td>
-                    <td>{{ $item->ward->location }}</td>
+                    <td>{{ $item->patient->patient_id ?? 'N/A' }}</td>
+                    <td>{{ $item->patient->name ?? 'N/A' }}</td>
+                    <td>{{ $item->patient->gender ?? 'N/A' }} </td>
+                    <td>{{ $item->patient->mobile ?? 'N/A' }}</td>
+                    <td>{{ $item->ward->location ?? 'N/A' }}</td>
                     <td>{{ $item->bed_number }}</td>
                     <td>
-                        <a href="{{ route('nurse.patientDetails', $item->patient->id) }}" class="btn btn-sm btn-info my-2" title="View">
-                            <i class="fas fa-eye" aria-hidden="true"></i>
-                        </a>
+                        @if($item->patient)
+                            <a href="{{ route('nurse.patientDetails', $item->patient->id) }}" class="btn btn-sm btn-info my-2" title="View">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </a>
+                        @else
+                            <span class="text-muted">No Patient</span>
+                        @endif
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center py-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            No patients with permanent duty doctors found.
+                        </div>
+                    </td>
+                </tr>
+            @endforelse
 
             </tbody>
         </table>

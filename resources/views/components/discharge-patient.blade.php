@@ -14,13 +14,13 @@
 
 
             <tbody>
-            @foreach($patients as $item)
-                @if (isset($item->patient->patientDischarge[0]))
+            @forelse($patients as $item)
+                @if ($item->patient && $item->patient->patientDischarge && isset($item->patient->patientDischarge[0]))
                     <tr>
-                        <td>{{ $item->patient->patient_id }}</td>
-                        <td>{{ $item->patient->name }}</td>
-                        <td>{{ $item->patient->doctor->doctor_id }}</td>
-                        <td>{{ $item->patient->doctor->name }}</td>
+                        <td>{{ $item->patient->patient_id ?? 'N/A' }}</td>
+                        <td>{{ $item->patient->name ?? 'N/A' }}</td>
+                        <td>{{ $item->patient->doctor->doctor_id ?? 'N/A' }}</td>
+                        <td>{{ $item->patient->doctor->name ?? 'N/A' }}</td>
                         <td>
                             @if($item->patient->patientDischarge[0]->status == 'pending')
                             <a href="{{ route('nurse.discharge-letter', $item->patient->patientDischarge[0]->id) }}" class="btn btn-sm btn-info my-2"
@@ -36,7 +36,16 @@
                         </td>
                     </tr>
                 @endif
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            No discharge requests found.
+                        </div>
+                    </td>
+                </tr>
+            @endforelse
             </tbody>
 
         </table>

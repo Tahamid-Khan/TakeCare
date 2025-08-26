@@ -157,10 +157,18 @@ public function getBedsByWard(Request $request)
             return response()->json(['error' => 'Ward ID is required'], 400);
         }
         
-        // Get beds that are empty and belong to the selected ward
+        // Get beds that are EMPTY and belong to the selected ward
         $beds = Bed::where('ward_id', $wardId)
-                   ->where('bed_status', 'occupied')
+                   ->where('bed_status', 'empty')
                    ->get();
+        
+        // Check if no beds are available
+        if ($beds->isEmpty()) {
+            return response()->json([
+                'status' => 'no_beds',
+                'message' => 'No available beds in this ward'
+            ]);
+        }
                    
         // Return JSON response
         return response()->json($beds);
